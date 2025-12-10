@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Source EventStoreDB (gRPC) - mirrors your production source
   source-esdb:
     container_name: test-source-esdb
     image: kurrentplatform/kurrentdb:25.0
@@ -14,12 +13,11 @@ services:
       KURRENTDB_RUN_PROJECTIONS: all
       KURRENTDB_ENABLE_ATOM_PUB_OVER_HTTP: 'true'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:2114/health/live"\]
+      test: ["CMD", "curl", "-f", "http://localhost:2114/health/live"]
       interval: 5s
       timeout: 3s
       retries: 10
 
-  # Sink EventStore (TCP) - mirrors your production sink
   sink-eventstore:
     container_name: test-sink-eventstore
     image: eventstore/eventstore:release-5.0.8
@@ -33,12 +31,11 @@ services:
       EVENTSTORE_RUN_PROJECTIONS: all
       EVENTSTORE_START_STANDARD_PROJECTIONS: 'true'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:2113/health/live"\]
+      test: ["CMD", "curl", "-f", "http://localhost:2113/health/live"]
       interval: 5s
       timeout: 3s
       retries: 10
 
-  # Mock HTTP Transform Service - can simulate failures
   mock-transform:
     container_name: test-mock-transform
     build:
@@ -48,30 +45,28 @@ services:
       - '3000:3000'
     environment:
       PORT: 3000
-      FAILURE_MODE: 'none'  # Options: none, unavailable, timeout, intermittent, slow
-      FAILURE_RATE: '0.0'   # 0.0 to 1.0 for intermittent failures
-      DELAY_MS: '0'         # Delay in milliseconds
+      FAILURE_MODE: 'none'
+      FAILURE_RATE: '0.0'
+      DELAY_MS: '0'
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"\]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
       interval: 5s
       timeout: 3s
       retries: 5
 
-  # Toxiproxy - network chaos for testing connection resilience
   toxiproxy:
     container_name: test-toxiproxy
     image: ghcr.io/shopify/toxiproxy:latest
     ports:
-      - '8474:8474'  # Toxiproxy API
-      - '21141:21141'  # Proxy for source ESDB
-      - '11131:11131'  # Proxy for sink EventStore TCP
+      - '8474:8474'
+      - '21141:21141'
+      - '11131:11131'
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8474/version"\]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8474/version"]
       interval: 5s
       timeout: 3s
       retries: 5
 
-  # Toxiproxy configuration
   toxiproxy-config:
     container_name: test-toxiproxy-config
     image: ghcr.io/shopify/toxiproxy:latest
@@ -88,13 +83,8 @@ services:
       - |
         set -e
         echo "Configuring Toxiproxy proxies..."
-        
-        # Create proxy for source ESDB gRPC
         /toxiproxy-cli -h toxiproxy:8474 create source-esdb -l 0.0.0.0:21141 -u source-esdb:2114 || true
-        
-        # Create proxy for sink EventStore TCP
         /toxiproxy-cli -h toxiproxy:8474 create sink-eventstore -l 0.0.0.0:11131 -u sink-eventstore:1113 || true
-        
         echo "Toxiproxy proxies configured successfully"
         tail -f /dev/null
 
