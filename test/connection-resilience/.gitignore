@@ -1,0 +1,7 @@
+# Ignore logs and runtime data
+logs/
+checkpoint/
+*.log
+
+# Docker volumes
+.docker/
