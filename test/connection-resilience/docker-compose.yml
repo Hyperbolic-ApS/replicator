@@ -3,38 +3,49 @@ version: '3.8'
 services:
   source-esdb:
     container_name: test-source-esdb
-    image: kurrentplatform/kurrentdb:25.0
+    image: eventstore/eventstore:23.10.1-bookworm-slim
+    platform: linux/amd64
     ports:
-      - '2114:2114'
+      - '2114:2113'
+      - '11113:1113'
     environment:
-      KURRENTDB_INSECURE: 'true'
-      KURRENTDB_CLUSTER_SIZE: 1
-      KURRENTDB_HTTP_PORT: 2114
-      KURRENTDB_RUN_PROJECTIONS: all
-      KURRENTDB_ENABLE_ATOM_PUB_OVER_HTTP: 'true'
+      EVENTSTORE_CLUSTER_SIZE: 1
+      EVENTSTORE_INSECURE: "true"
+      EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: "true"
+      EVENTSTORE_RUN_PROJECTIONS: All
+      EVENTSTORE_START_STANDARD_PROJECTIONS: "true"
+      EVENTSTORE_EXT_TCP_PORT: 1113
+      EVENTSTORE_HTTP_PORT: 2113
+      EVENTSTORE_ENABLE_EXTERNAL_TCP: "true"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:2114/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:2113/health/live"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 20
+      start_period: 30s
 
   sink-eventstore:
     container_name: test-sink-eventstore
-    image: eventstore/eventstore:release-5.0.8
+    image: eventstore/eventstore:23.10.1-bookworm-slim
+    platform: linux/amd64
     ports:
       - '2113:2113'
       - '1113:1113'
     environment:
       EVENTSTORE_CLUSTER_SIZE: 1
+      EVENTSTORE_INSECURE: "true"
+      EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: "true"
+      EVENTSTORE_RUN_PROJECTIONS: All
+      EVENTSTORE_START_STANDARD_PROJECTIONS: "true"
       EVENTSTORE_EXT_TCP_PORT: 1113
-      EVENTSTORE_EXT_HTTP_PORT: 2113
-      EVENTSTORE_RUN_PROJECTIONS: all
-      EVENTSTORE_START_STANDARD_PROJECTIONS: 'true'
+      EVENTSTORE_HTTP_PORT: 2113
+      EVENTSTORE_ENABLE_EXTERNAL_TCP: "true"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:2113/health/live"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 20
+      start_period: 30s
 
   mock-transform:
     container_name: test-mock-transform
@@ -59,34 +70,12 @@ services:
     image: ghcr.io/shopify/toxiproxy:latest
     ports:
       - '8474:8474'
-      - '21141:21141'
       - '11131:11131'
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8474/version"]
       interval: 5s
       timeout: 3s
       retries: 5
-
-  toxiproxy-config:
-    container_name: test-toxiproxy-config
-    image: ghcr.io/shopify/toxiproxy:latest
-    depends_on:
-      toxiproxy:
-        condition: service_healthy
-      source-esdb:
-        condition: service_healthy
-      sink-eventstore:
-        condition: service_healthy
-    entrypoint: /bin/sh
-    command:
-      - -c
-      - |
-        set -e
-        echo "Configuring Toxiproxy proxies..."
-        /toxiproxy-cli -h toxiproxy:8474 create source-esdb -l 0.0.0.0:21141 -u source-esdb:2114 || true
-        /toxiproxy-cli -h toxiproxy:8474 create sink-eventstore -l 0.0.0.0:11131 -u sink-eventstore:1113 || true
-        echo "Toxiproxy proxies configured successfully"
-        tail -f /dev/null
 
 networks:
   default:

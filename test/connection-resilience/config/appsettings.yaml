@@ -1,33 +1,27 @@
 replicator:
-  # Reader: gRPC source (through Toxiproxy)
   reader:
-    protocol: grpc
-    connectionString: "esdb://localhost:21141?tls=false"  # Through toxiproxy
+    protocol: tcp
+    connectionString: "ConnectTo=tcp://admin:changeit@localhost:11113;HeartBeatTimeout=1500;HeartBeatInterval=500;UseSslConnection=false"
     pageSize: 100
 
-  # Sink: TCP destination (through Toxiproxy)
   sink:
     protocol: tcp
-    connectionString: "ConnectTo=tcp://admin:changeit@localhost:11131;HeartBeatTimeout=1500;HeartBeatInterval=500"  # Through toxiproxy
+    connectionString: "ConnectTo=tcp://admin:changeit@localhost:11131;HeartBeatTimeout=1500;HeartBeatInterval=500;UseSslConnection=false"
     partitionCount: 1
     bufferSize: 100
 
-  # HTTP Transform
   transform:
     type: http
-    config: "http://localhost:3000"  # Mock transform service
+    config: "http://localhost:3000"
     bufferSize: 1
 
-  # Checkpoint configuration
   checkpoint:
     type: file
     path: "./test/connection-resilience/checkpoint"
     checkpointAfter: 10
 
-  # Filters - allow all events for testing
   filters: []
 
-  # Run continuously and restart on failure
   runContinuously: true
   restartOnFailure: true
   restartDelay: 00:00:05
