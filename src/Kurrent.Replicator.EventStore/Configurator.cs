@@ -1,13 +1,13 @@
 namespace Kurrent.Replicator.EventStore;
 
-public class TcpConfigurator(int pageSize) : IConfigurator {
+public class TcpConfigurator(int pageSize, int writeTimeoutSeconds = 30) : IConfigurator {
     public string Protocol => "tcp";
 
     public IEventReader ConfigureReader(string connectionString)
         => new TcpEventReader(ConfigureEventStoreTcp(connectionString, true), pageSize);
 
     public IEventWriter ConfigureWriter(string connectionString)
-        => new TcpEventWriter(ConfigureEventStoreTcp(connectionString, false));
+        => new TcpEventWriter(ConfigureEventStoreTcp(connectionString, false), writeTimeoutSeconds);
 
     IEventStoreConnection ConfigureEventStoreTcp(string connectionString, bool follower) {
         var builder = ConnectionSettings.Create()

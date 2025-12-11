@@ -7,23 +7,39 @@ using StreamMetadata = EventStore.ClientAPI.StreamMetadata;
 // ReSharper disable SuggestBaseTypeForParameter
 namespace Kurrent.Replicator.EventStore;
 
-public class TcpEventWriter(IEventStoreConnection connection) : IEventWriter {
+public class TcpEventWriter(IEventStoreConnection connection, int writeTimeoutSeconds = 30) : IEventWriter {
     static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
     public Task Start() => connection.ConnectAsync();
 
-    public Task<long> WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken) {
-        var task = proposedEvent switch {
-            ProposedEvent p             => Append(p),
-            ProposedMetaEvent meta      => SetMeta(meta),
-            ProposedDeleteStream delete => Delete(delete),
-            IgnoredEvent _              => Task.FromResult(-1L),
-            _                           => throw new InvalidOperationException("Unknown proposed event type")
-        };
+    public async Task<long> WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken) {
+        // Create a timeout cancellation token to prevent indefinite hangs
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(writeTimeoutSeconds));
+        
+        try {
+            var task = proposedEvent switch {
+                ProposedEvent p             => Append(p, timeoutCts.Token),
+                ProposedMetaEvent meta      => SetMeta(meta, timeoutCts.Token),
+                ProposedDeleteStream delete => Delete(delete, timeoutCts.Token),
+                IgnoredEvent _              => Task.FromResult(-1L),
+                _                           => throw new InvalidOperationException("Unknown proposed event type")
+            };
 
-        return Metrics.Measure(() => task, ReplicationMetrics.WritesHistogram, ReplicationMetrics.WriteErrorsCount);
+            return await Metrics.Measure(() => task, ReplicationMetrics.WritesHistogram, ReplicationMetrics.WriteErrorsCount);
+        }
+        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested) {
+            // Write operation timed out (not user cancellation)
+            Log.Error(
+                "Write operation timed out after {Timeout}s for event {EventId} to stream {Stream}",
+                writeTimeoutSeconds,
+                proposedEvent.EventDetails.EventId,
+                proposedEvent.EventDetails.Stream
+            );
+            throw new TimeoutException($"Write operation timed out after {writeTimeoutSeconds} seconds");
+        }
 
-        async Task<long> Append(ProposedEvent p) {
+        async Task<long> Append(ProposedEvent p, CancellationToken ct) {
             if (Log.IsDebugEnabled()) {
                 Log.Debug(
                     "TCP: Write event with id {Id} of type {Type} to {Stream} with original position {Position}",
@@ -34,12 +50,14 @@ public class TcpEventWriter(IEventStoreConnection connection) : IEventWriter {
                 );
             }
 
-            var result = await connection.AppendToStreamAsync(p.EventDetails.Stream, ExpectedVersion.Any, Map(p)).ConfigureAwait(false);
+            var result = await connection.AppendToStreamAsync(p.EventDetails.Stream, ExpectedVersion.Any, Map(p))
+                .WaitAsync(ct)
+                .ConfigureAwait(false);
 
             return result.LogPosition.CommitPosition;
         }
 
-        async Task<long> SetMeta(ProposedMetaEvent meta) {
+        async Task<long> SetMeta(ProposedMetaEvent meta, CancellationToken ct) {
             if (Log.IsDebugEnabled())
                 Log.Debug(
                     "TCP: Setting metadata to {Stream} with original position {Position}",
@@ -64,12 +82,13 @@ public class TcpEventWriter(IEventStoreConnection connection) : IEventWriter {
                         )
                     )
                 )
+                .WaitAsync(ct)
                 .ConfigureAwait(false);
 
             return result.LogPosition.CommitPosition;
         }
 
-        async Task<long> Delete(ProposedDeleteStream delete) {
+        async Task<long> Delete(ProposedDeleteStream delete, CancellationToken ct) {
             if (Log.IsDebugEnabled()) {
                 Log.Debug(
                     "TCP: Deleting stream {Stream} with original position {Position}",
@@ -78,7 +97,9 @@ public class TcpEventWriter(IEventStoreConnection connection) : IEventWriter {
                 );
             }
 
-            var result = await connection.DeleteStreamAsync(delete.EventDetails.Stream, ExpectedVersion.Any).ConfigureAwait(false);
+            var result = await connection.DeleteStreamAsync(delete.EventDetails.Stream, ExpectedVersion.Any)
+                .WaitAsync(ct)
+                .ConfigureAwait(false);
 
             return result.LogPosition.CommitPosition;
         }

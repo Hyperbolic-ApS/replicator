@@ -25,10 +25,11 @@ public record Checkpoint {
 }
 
 public record SinkSettings : EsdbSettings {
-    public int    PartitionCount { get; init; } = 1;
-    public string Router         { get; init; }
-    public string Partitioner    { get; init; }
-    public int    BufferSize     { get; init; } = 1000;
+    public int    PartitionCount      { get; init; } = 1;
+    public string Router              { get; init; }
+    public string Partitioner         { get; init; }
+    public int    BufferSize          { get; init; } = 1000;
+    public int    WriteTimeoutSeconds { get; init; } = 30;
 }
 
 public record TransformSettings {

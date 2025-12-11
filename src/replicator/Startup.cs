@@ -25,7 +25,7 @@ static class Startup {
 
         services.AddSingleton<Factory>();
 
-        services.AddSingleton<IConfigurator, TcpConfigurator>(_ => new(replicatorOptions.Reader.PageSize));
+        services.AddSingleton<IConfigurator, TcpConfigurator>(_ => new(replicatorOptions.Reader.PageSize, replicatorOptions.Sink.WriteTimeoutSeconds));
         services.AddSingleton<IConfigurator, GrpcConfigurator>();
         services.AddSingleton<IConfigurator, KafkaConfigurator>(_ => new(replicatorOptions.Sink.Router));
 
@@ -56,7 +56,8 @@ static class Startup {
             new SinkPipeOptions(
                 replicatorOptions.Sink.PartitionCount,
                 replicatorOptions.Sink.BufferSize,
-                FunctionLoader.LoadFile(replicatorOptions.Sink.Partitioner, "Partitioner")
+                FunctionLoader.LoadFile(replicatorOptions.Sink.Partitioner, "Partitioner"),
+                replicatorOptions.Sink.WriteTimeoutSeconds
             )
         );
 
