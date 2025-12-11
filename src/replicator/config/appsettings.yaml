@@ -1,12 +1,12 @@
 replicator:
   reader:
-    protocol: tcp
-    connectionString: "ConnectTo=tcp://admin:changeit@localhost:11113;HeartBeatTimeout=1500;HeartBeatInterval=500;UseSslConnection=false"
+    protocol: grpc
+    connectionString: "esdb://localhost:2114?tls=false"
     pageSize: 100
 
   sink:
     protocol: tcp
-    connectionString: "ConnectTo=tcp://admin:changeit@localhost:11131;HeartBeatTimeout=1500;HeartBeatInterval=500;UseSslConnection=false"
+    connectionString: "ConnectTo=tcp://admin:changeit@localhost:11131;HeartBeatTimeout=60000;HeartBeatInterval=5000;UseSslConnection=false"
     partitionCount: 1
     bufferSize: 100
 
