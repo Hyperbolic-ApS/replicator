@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="0d59cb23-0858-4795-bbd3-58fc7e694735" name="@HUAWEI_Mate_20_lite-5bdf5 2026-01-12 11:58:51.878" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-01-12T11:58:23.317776Z" queuing="2026-01-12T11:58:23.317776Z" start="2026-01-12T11:58:23.317776Z" finish="2026-01-12T11:58:51.878751Z" />
+  <TestSettings name="default" id="60650efa-28d2-4af5-880d-7896eb8f448c">
+    <Deployment runDeploymentRoot="_HUAWEI_Mate_20_lite-5bdf5_2026-01-12_11_58_51.878" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="f28c9a78-6e43-4442-9b3b-c9b727ff6c7f" testId="aeec9201-7b74-6253-3c16-e619294d9d20" testName="ShouldKeepOrderWithinPartition" computerName="HUAWEI_Mate_20_lite-5bdf5" duration="00:00:28.4557090" startTime="2026-01-12T11:58:23.3903190+00:00" endTime="2026-01-12T11:58:51.8460280+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="f28c9a78-6e43-4442-9b3b-c9b727ff6c7f" />
+    <UnitTestResult executionId="5c97f893-6a73-471c-8e5e-8c2786ac6ddb" testId="44063cd4-e1f1-60e6-1a74-1ded83269e17" testName="Verify" computerName="HUAWEI_Mate_20_lite-5bdf5" duration="00:00:28.4564740" startTime="2026-01-12T11:58:23.3903230+00:00" endTime="2026-01-12T11:58:51.8467970+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="5c97f893-6a73-471c-8e5e-8c2786ac6ddb" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="ShouldKeepOrderWithinPartition" storage="/users/kasperwelner/projects/replicator/test/kurrent.replicator.tests/bin/debug/net9.0/kurrent.replicator.tests.dll" id="aeec9201-7b74-6253-3c16-e619294d9d20">
+      <Execution id="f28c9a78-6e43-4442-9b3b-c9b727ff6c7f" />
+      <TestMethod codeBase="/Users/kasperwelner/Projects/replicator/test/Kurrent.Replicator.Tests/bin/Debug/net9.0/Kurrent.Replicator.Tests.dll" adapterTypeName="executor://TUnitExtension/0.19.86.0" className="Kurrent.Replicator.Tests.ValuePartitionerTests" name="ShouldKeepOrderWithinPartition" />
+    </UnitTest>
+    <UnitTest name="Verify" storage="/users/kasperwelner/projects/replicator/test/kurrent.replicator.tests/bin/debug/net9.0/kurrent.replicator.tests.dll" id="44063cd4-e1f1-60e6-1a74-1ded83269e17">
+      <Execution id="5c97f893-6a73-471c-8e5e-8c2786ac6ddb" />
+      <TestMethod codeBase="/Users/kasperwelner/Projects/replicator/test/Kurrent.Replicator.Tests/bin/Debug/net9.0/Kurrent.Replicator.Tests.dll" adapterTypeName="executor://TUnitExtension/0.19.86.0" className="Kurrent.Replicator.Tests.ChaserCheckpointSeedingTests" name="Verify" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="aeec9201-7b74-6253-3c16-e619294d9d20" executionId="f28c9a78-6e43-4442-9b3b-c9b727ff6c7f" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="44063cd4-e1f1-60e6-1a74-1ded83269e17" executionId="5c97f893-6a73-471c-8e5e-8c2786ac6ddb" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

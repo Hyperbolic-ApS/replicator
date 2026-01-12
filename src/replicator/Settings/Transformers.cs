@@ -19,7 +19,12 @@ public static class Transformers {
         HttpTransform GetHttpTransform() {
             Ensure.NotEmpty(settings.Transform?.Config, "Transform config");
 
-            return new(settings.Transform!.Config);
+            return new(
+                settings.Transform!.Config,
+                settings.Transform.TimeoutSeconds,
+                settings.Transform.RetryDelaySeconds,
+                settings.Transform.RetryMaxDelaySeconds
+            );
         }
 
         JsTransform GetJsTransform() {

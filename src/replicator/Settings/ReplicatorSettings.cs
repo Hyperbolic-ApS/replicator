@@ -36,6 +36,11 @@ public record TransformSettings {
     public string Type       { get; init; } = "default";
     public string Config     { get; init; }
     public int    BufferSize { get; init; } = 1;
+
+    // HTTP transform settings (used when Type == "http")
+    public int TimeoutSeconds       { get; init; } = 100;
+    public int RetryDelaySeconds    { get; init; } = 1;
+    public int RetryMaxDelaySeconds { get; init; } = 30;
 }
 
 public record Filter {

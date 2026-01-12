@@ -8,13 +8,13 @@ namespace Kurrent.Replicator.Tests.Fixtures;
 
 public class ContainerFixture {
     EventStoreDbContainer _kurrentDbContainer;
-    IContainer            _eventStoreContainer;
+    EventStoreDbContainer _eventStoreContainer;
     public DirectoryInfo  V5DataPath { get; private set; }
 
     public async Task StartContainers() {
         V5DataPath           = Directory.CreateTempSubdirectory();
         _kurrentDbContainer  = BuildV23Container();
-        _eventStoreContainer = BuildV5Container(V5DataPath);
+        _eventStoreContainer = BuildV23ContainerForTcp(V5DataPath);
 
         await _kurrentDbContainer.StartAsync();
         await _eventStoreContainer.StartAsync();
@@ -28,7 +28,8 @@ public class ContainerFixture {
     }
 
     public IEventStoreConnection GetV5Client() {
-        var connectionString = $"ConnectTo=tcp://admin:changeit@localhost:{_eventStoreContainer.GetMappedPublicPort(1113)}; HeartBeatTimeout=500; UseSslConnection=false;";
+        var port             = _eventStoreContainer.GetMappedPublicPort(1113);
+        var connectionString = $"ConnectTo=tcp://admin:changeit@localhost:{port}; HeartBeatTimeout=500; UseSslConnection=false;";
         var client           = ConfigureEventStoreTcp(connectionString);
 
         return client;
@@ -48,21 +49,17 @@ public class ContainerFixture {
         .WithEnvironment("EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP", bool.TrueString)
         .Build();
 
-    const int TcpPort  = 1113;
-    const int HttpPort = 2113;
-    
-    static IContainer BuildV5Container(DirectoryInfo data) => new ContainerBuilder()
-        .WithImage("eventstore/eventstore:5.0.11-bionic")
+    static EventStoreDbContainer BuildV23ContainerForTcp(DirectoryInfo data) => new EventStoreDbBuilder()
+        .WithImage("eventstore/eventstore:23.10.1-bookworm-slim")
         .WithEnvironment("EVENTSTORE_CLUSTER_SIZE", "1")
         .WithEnvironment("EVENTSTORE_RUN_PROJECTIONS", "None")
         .WithEnvironment("EVENTSTORE_START_STANDARD_PROJECTIONS", "false")
-        .WithEnvironment("EVENTSTORE_EXT_HTTP_PORT", "2113")
+        .WithEnvironment("EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP", bool.TrueString)
+        .WithEnvironment("EVENTSTORE_ENABLE_EXTERNAL_TCP", bool.TrueString)
+        .WithEnvironment("EVENTSTORE_INSECURE", bool.TrueString)
+        .WithEnvironment("EVENTSTORE_EXT_TCP_PORT", "1113")
+        .WithPortBinding(1113, true)
         .WithBindMount(data.FullName, "/var/lib/eventstore")
-        .WithExposedPort(HttpPort)
-        .WithExposedPort(TcpPort)
-        .WithPortBinding(HttpPort, true)
-        .WithPortBinding(TcpPort, true)
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(TcpPort))
         .Build();
 
     static IEventStoreConnection ConfigureEventStoreTcp(string connectionString) {

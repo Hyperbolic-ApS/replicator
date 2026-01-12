@@ -28,7 +28,7 @@ public class PreparePipe {
                         var proposedEvent = ctx.GetPayload<BaseProposedEvent>();
 
                         try {
-                            await send(new(proposedEvent, CancellationToken.None)).ConfigureAwait(false);
+                            await send(new(proposedEvent, ctx.CancellationToken)).ConfigureAwait(false);
                         } catch (OperationCanceledException) { }
                     }
                 );

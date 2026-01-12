@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="6167c5b8-b0f7-4e27-a60b-c989b1b0b352" name="@HUAWEI_Mate_20_lite-5bdf5 2026-01-09 15:43:46.777" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-01-09T15:43:32.995649Z" queuing="2026-01-09T15:43:32.995649Z" start="2026-01-09T15:43:32.995649Z" finish="2026-01-09T15:43:46.777556Z" />
+  <TestSettings name="default" id="dfb045b0-f867-4fcc-a88d-96e5dc15d317">
+    <Deployment runDeploymentRoot="_HUAWEI_Mate_20_lite-5bdf5_2026-01-09_15_43_46.777" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="e99bba49-caab-42f9-b427-19c22779d8e1" testId="aeec9201-7b74-6253-3c16-e619294d9d20" testName="ShouldKeepOrderWithinPartition" computerName="HUAWEI_Mate_20_lite-5bdf5" duration="00:00:13.6477340" startTime="2026-01-09T15:43:33.0748170+00:00" endTime="2026-01-09T15:43:46.7225510+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="e99bba49-caab-42f9-b427-19c22779d8e1">
+      <Output>
+        <ErrorInfo>
+          <Message>DockerApiException: Docker API responded with status code=Conflict, response={"message":"container b48645a20c76d836d65bae11d2993daf1cc77ed32e77b78834ee1e62c987ac2f is not running"}
+</Message>
+          <StackTrace>   at Docker.DotNet.DockerClient.HandleIfErrorResponseAsync(HttpStatusCode statusCode, HttpResponseMessage response, IEnumerable`1 handlers) in /_/src/Docker.DotNet/DockerClient.cs:line 492
+   at Docker.DotNet.DockerClient.MakeRequestAsync[T](IEnumerable`1 errorHandlers, HttpMethod method, String path, IQueryString queryString, IRequestContent body, IDictionary`2 headers, TimeSpan timeout, CancellationToken token) in /_/src/Docker.DotNet/DockerClient.cs:line 257
+   at Docker.DotNet.ExecOperations.ExecCreateContainerAsync(String id, ContainerExecCreateParameters parameters, CancellationToken cancellationToken) in /_/src/Docker.DotNet/Endpoints/ExecOperations.cs:line 40
+   at DotNet.Testcontainers.Clients.DockerContainerOperations.ExecAsync(String id, IList`1 command, CancellationToken ct) in /_/src/Testcontainers/Clients/DockerContainerOperations.cs:line 162
+   at DotNet.Testcontainers.Configurations.UntilUnixCommandIsCompleted.UntilAsync(IContainer container) in /_/src/Testcontainers/Configurations/WaitStrategies/UntilUnixCommandIsCompleted.cs:line 22
+   at DotNet.Testcontainers.Containers.DockerContainer.CheckReadinessAsync(WaitStrategy waitStrategy, CancellationToken ct) in /_/src/Testcontainers/Containers/DockerContainer.cs:line 638
+   at DotNet.Testcontainers.Configurations.WaitStrategy.&lt;&gt;c__DisplayClass24_0.&lt;&lt;WaitUntilAsync&gt;g__UntilAsync|0&gt;d.MoveNext() in /_/src/Testcontainers/Configurations/WaitStrategies/WaitStrategy.cs:line 184
+--- End of stack trace from previous location ---
+   at DotNet.Testcontainers.Configurations.WaitStrategy.WaitUntilAsync(Func`1 wait, TimeSpan interval, TimeSpan timeout, Int32 retries, CancellationToken ct) in /_/src/Testcontainers/Configurations/WaitStrategies/WaitStrategy.cs:line 213
+   at DotNet.Testcontainers.Containers.DockerContainer.CheckReadinessAsync(IEnumerable`1 waitStrategies, CancellationToken ct) in /_/src/Testcontainers/Containers/DockerContainer.cs:line 656
+   at DotNet.Testcontainers.Containers.DockerContainer.UnsafeStartAsync(CancellationToken ct) in /_/src/Testcontainers/Containers/DockerContainer.cs:line 518
+   at DotNet.Testcontainers.Containers.DockerContainer.StartAsync(CancellationToken ct) in /_/src/Testcontainers/Containers/DockerContainer.cs:line 301
+   at Kurrent.Replicator.Tests.Fixtures.ContainerFixture.StartContainers() in /Users/kasperwelner/Projects/replicator/test/Kurrent.Replicator.Tests/Fixtures/ContainerFixture.cs:line 20
+   at Kurrent.Replicator.Tests.ValuePartitionerTests.Start() in /Users/kasperwelner/Projects/replicator/test/Kurrent.Replicator.Tests/CustomPartitionerTests.cs:line 35</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="10bb4cf1-e201-45b9-8265-765b25764cf8" testId="44063cd4-e1f1-60e6-1a74-1ded83269e17" testName="Verify" computerName="HUAWEI_Mate_20_lite-5bdf5" duration="00:00:13.6654510" startTime="2026-01-09T15:43:33.0748220+00:00" endTime="2026-01-09T15:43:46.7402730+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="10bb4cf1-e201-45b9-8265-765b25764cf8">
+      <Output>
+        <ErrorInfo>
+          <Message>DockerApiException: Docker API responded with status code=Conflict, response={"message":"container 7b9ee7c4ec2b6fcea2892da54c45d16c9e10aa67cb82cf135822ca53d4f02be8 is not running"}
+</Message>
+          <StackTrace>   at Docker.DotNet.DockerClient.HandleIfErrorResponseAsync(HttpStatusCode statusCode, HttpResponseMessage response, IEnumerable`1 handlers) in /_/src/Docker.DotNet/DockerClient.cs:line 492
+   at Docker.DotNet.DockerClient.MakeRequestAsync[T](IEnumerable`1 errorHandlers, HttpMethod method, String path, IQueryString queryString, IRequestContent body, IDictionary`2 headers, TimeSpan timeout, CancellationToken token) in /_/src/Docker.DotNet/DockerClient.cs:line 257
+   at Docker.DotNet.ExecOperations.ExecCreateContainerAsync(String id, ContainerExecCreateParameters parameters, CancellationToken cancellationToken) in /_/src/Docker.DotNet/Endpoints/ExecOperations.cs:line 40
+   at DotNet.Testcontainers.Clients.DockerContainerOperations.ExecAsync(String id, IList`1 command, CancellationToken ct) in /_/src/Testcontainers/Clients/DockerContainerOperations.cs:line 162
+   at DotNet.Testcontainers.Configurations.UntilUnixCommandIsCompleted.UntilAsync(IContainer container) in /_/src/Testcontainers/Configurations/WaitStrategies/UntilUnixCommandIsCompleted.cs:line 22
+   at DotNet.Testcontainers.Containers.DockerContainer.CheckReadinessAsync(WaitStrategy waitStrategy, CancellationToken ct) in /_/src/Testcontainers/Containers/DockerContainer.cs:line 638
+   at DotNet.Testcontainers.Configurations.WaitStrategy.&lt;&gt;c__DisplayClass24_0.&lt;&lt;WaitUntilAsync&gt;g__UntilAsync|0&gt;d.MoveNext() in /_/src/Testcontainers/Configurations/WaitStrategies/WaitStrategy.cs:line 184
+--- End of stack trace from previous location ---
+   at DotNet.Testcontainers.Configurations.WaitStrategy.WaitUntilAsync(Func`1 wait, TimeSpan interval, TimeSpan timeout, Int32 retries, CancellationToken ct) in /_/src/Testcontainers/Configurations/WaitStrategies/WaitStrategy.cs:line 213
+   at DotNet.Testcontainers.Containers.DockerContainer.CheckReadinessAsync(IEnumerable`1 waitStrategies, CancellationToken ct) in /_/src/Testcontainers/Containers/DockerContainer.cs:line 656
+   at DotNet.Testcontainers.Containers.DockerContainer.UnsafeStartAsync(CancellationToken ct) in /_/src/Testcontainers/Containers/DockerContainer.cs:line 518
+   at DotNet.Testcontainers.Containers.DockerContainer.StartAsync(CancellationToken ct) in /_/src/Testcontainers/Containers/DockerContainer.cs:line 301
+   at Kurrent.Replicator.Tests.Fixtures.ContainerFixture.StartContainers() in /Users/kasperwelner/Projects/replicator/test/Kurrent.Replicator.Tests/Fixtures/ContainerFixture.cs:line 20
+   at Kurrent.Replicator.Tests.ChaserCheckpointSeedingTests.Start() in /Users/kasperwelner/Projects/replicator/test/Kurrent.Replicator.Tests/ChaserCheckpointSeedingTests.cs:line 33</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="ShouldKeepOrderWithinPartition" storage="/users/kasperwelner/projects/replicator/test/kurrent.replicator.tests/bin/debug/net9.0/kurrent.replicator.tests.dll" id="aeec9201-7b74-6253-3c16-e619294d9d20">
+      <Execution id="e99bba49-caab-42f9-b427-19c22779d8e1" />
+      <TestMethod codeBase="/Users/kasperwelner/Projects/replicator/test/Kurrent.Replicator.Tests/bin/Debug/net9.0/Kurrent.Replicator.Tests.dll" adapterTypeName="executor://TUnitExtension/0.19.86.0" className="Kurrent.Replicator.Tests.ValuePartitionerTests" name="ShouldKeepOrderWithinPartition" />
+    </UnitTest>
+    <UnitTest name="Verify" storage="/users/kasperwelner/projects/replicator/test/kurrent.replicator.tests/bin/debug/net9.0/kurrent.replicator.tests.dll" id="44063cd4-e1f1-60e6-1a74-1ded83269e17">
+      <Execution id="10bb4cf1-e201-45b9-8265-765b25764cf8" />
+      <TestMethod codeBase="/Users/kasperwelner/Projects/replicator/test/Kurrent.Replicator.Tests/bin/Debug/net9.0/Kurrent.Replicator.Tests.dll" adapterTypeName="executor://TUnitExtension/0.19.86.0" className="Kurrent.Replicator.Tests.ChaserCheckpointSeedingTests" name="Verify" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="aeec9201-7b74-6253-3c16-e619294d9d20" executionId="e99bba49-caab-42f9-b427-19c22779d8e1" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="44063cd4-e1f1-60e6-1a74-1ded83269e17" executionId="10bb4cf1-e201-45b9-8265-765b25764cf8" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="2" executed="2" passed="0" failed="2" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <RunInfos>
+      <RunInfo computerName="HUAWEI_Mate_20_lite-5bdf5" outcome="Error" timestamp="2026-01-09T15:43:46.781923">
+        <Text>Exit code indicates failure: '2'. Please refer to https://aka.ms/testingplatform/exitcodes for more information.</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>
