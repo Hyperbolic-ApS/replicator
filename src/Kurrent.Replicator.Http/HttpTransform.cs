@@ -10,6 +10,8 @@ namespace Kurrent.Replicator.Http;
 public class HttpTransform {
     static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
+    const int WarnEveryAttempts = 10;
+
     readonly HttpClient _client;
     readonly TimeSpan   _timeout;
     readonly TimeSpan   _retryMinDelay;
@@ -43,6 +45,8 @@ public class HttpTransform {
         var attempt = 0;
         var delay   = _retryMinDelay;
 
+        DateTimeOffset? firstFailureAt = null;
+
         while (true) {
             cancellationToken.ThrowIfCancellationRequested();
             attempt++;
@@ -60,6 +64,16 @@ public class HttpTransform {
                 using var response = await _client.PostAsync("", content, requestCts.Token).ConfigureAwait(false);
 
                 if (response.StatusCode == HttpStatusCode.NoContent) {
+                    if (attempt > 1 && firstFailureAt != null) {
+                        Log.Info(
+                            "HTTP transform recovered after {Attempts} attempts over {ElapsedMs}ms for event {EventId} from {Stream}",
+                            attempt,
+                            (long)(DateTimeOffset.UtcNow - firstFailureAt.Value).TotalMilliseconds,
+                            originalEvent.EventDetails.EventId,
+                            originalEvent.EventDetails.Stream
+                        );
+                    }
+
                     return new IgnoredEvent(originalEvent.EventDetails, originalEvent.LogPosition, originalEvent.SequenceNumber);
                 }
 
@@ -77,6 +91,16 @@ public class HttpTransform {
                         cancellationToken: requestCts.Token
                     )
                     .ConfigureAwait(false))!;
+
+                if (attempt > 1 && firstFailureAt != null) {
+                    Log.Info(
+                        "HTTP transform recovered after {Attempts} attempts over {ElapsedMs}ms for event {EventId} from {Stream}",
+                        attempt,
+                        (long)(DateTimeOffset.UtcNow - firstFailureAt.Value).TotalMilliseconds,
+                        originalEvent.EventDetails.EventId,
+                        originalEvent.EventDetails.Stream
+                    );
+                }
 
                 return new ProposedEvent(
                     originalEvent.EventDetails with {
@@ -98,19 +122,52 @@ public class HttpTransform {
             continue;
 
             async Task Retry(string reason) {
+                firstFailureAt ??= DateTimeOffset.UtcNow;
+
                 // No delay configured: hot-looping is dangerous. Clamp to 1s.
                 var effectiveDelay = delay == TimeSpan.Zero ? TimeSpan.FromSeconds(1) : delay;
 
                 // Avoid log spam while still being visible during outages.
-                if (attempt == 1 || attempt % 10 == 0) {
-                    Log.Warn(
-                        "HTTP transform failed ({Reason}). Will retry in {DelayMs}ms (attempt {Attempt}) for event {EventId} from {Stream}",
-                        reason,
-                        (long)effectiveDelay.TotalMilliseconds,
-                        attempt,
-                        originalEvent.EventDetails.EventId,
-                        originalEvent.EventDetails.Stream
-                    );
+                if (attempt == 1 || attempt % WarnEveryAttempts == 0) {
+                    var now         = DateTimeOffset.UtcNow;
+                    var nextRetryAt = now.Add(effectiveDelay);
+
+                    var nextWarnAttempt = attempt == 1 ? WarnEveryAttempts : attempt + WarnEveryAttempts;
+                    var nextWarnIn      = EstimateTimeToNextWarning(delay, nextWarnAttempt - attempt);
+                    var nextWarnAt      = now.Add(nextWarnIn);
+
+                    if (attempt == 1) {
+                        Log.Warn(
+                            "HTTP transform failed ({Reason}). Replication will pause on this event until the transform succeeds. Next retry in {DelayMs}ms (at {NextRetryAt}). Backoff range {BackoffMinMs}ms-{BackoffMaxMs}ms; request timeout {TimeoutSeconds}s. Warning logs are emitted on attempt 1 and every {WarnEveryAttempts} attempts; next warning expected at attempt {NextWarnAttempt} (~{NextWarnInMs}ms, {NextWarnAt}) for event {EventId} from {Stream}",
+                            reason,
+                            (long)effectiveDelay.TotalMilliseconds,
+                            nextRetryAt,
+                            (long)_retryMinDelay.TotalMilliseconds,
+                            (long)_retryMaxDelay.TotalMilliseconds,
+                            _timeout == Timeout.InfiniteTimeSpan ? 0 : (int)_timeout.TotalSeconds,
+                            WarnEveryAttempts,
+                            nextWarnAttempt,
+                            (long)nextWarnIn.TotalMilliseconds,
+                            nextWarnAt,
+                            originalEvent.EventDetails.EventId,
+                            originalEvent.EventDetails.Stream
+                        );
+                    }
+                    else {
+                        Log.Warn(
+                            "HTTP transform still failing ({Reason}). Next retry in {DelayMs}ms (at {NextRetryAt}) (attempt {Attempt}). Warning logs are emitted every {WarnEveryAttempts} attempts; next warning expected at attempt {NextWarnAttempt} (~{NextWarnInMs}ms, {NextWarnAt}) for event {EventId} from {Stream}",
+                            reason,
+                            (long)effectiveDelay.TotalMilliseconds,
+                            nextRetryAt,
+                            attempt,
+                            WarnEveryAttempts,
+                            nextWarnAttempt,
+                            (long)nextWarnIn.TotalMilliseconds,
+                            nextWarnAt,
+                            originalEvent.EventDetails.EventId,
+                            originalEvent.EventDetails.Stream
+                        );
+                    }
                 }
 
                 await Task.Delay(effectiveDelay, cancellationToken).ConfigureAwait(false);
@@ -127,6 +184,21 @@ public class HttpTransform {
                 if (next > _retryMaxDelay) next = _retryMaxDelay;
 
                 return next;
+            }
+
+            TimeSpan EstimateTimeToNextWarning(TimeSpan startDelay, int attemptsUntilWarning) {
+                if (attemptsUntilWarning <= 0) return TimeSpan.Zero;
+
+                var total = TimeSpan.Zero;
+                var next  = startDelay;
+
+                for (var i = 0; i < attemptsUntilWarning; i++) {
+                    var effective = next == TimeSpan.Zero ? TimeSpan.FromSeconds(1) : next;
+                    total += effective;
+                    next  = NextDelay(next);
+                }
+
+                return total;
             }
 
             static bool IsRetryable(HttpStatusCode code)
