@@ -25,6 +25,9 @@ RUN dotnet publish ./src/replicator -c Release -a $TARGETARCH -clp:NoSummary --n
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runner
 
+COPY ca.crt /usr/local/share/ca-certificates/ca.crt
+RUN update-ca-certificates
+
 WORKDIR /app
 COPY --from=publish /app/publish .
 
